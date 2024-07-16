@@ -287,7 +287,7 @@ def user_ekm_no_1_dataset(ecg_file, shared_counter_, lock, total_elements):
 
         # pretier_print("end", int(user_id), ecg_file)
 
-    shutil.make_archive(user_id, format='zip', root_dir='./EKM_dataset')
+    shutil.make_archive(user_id, format='zip', root_dir=f'./EKM_dataset_{user_id}')
     source_file_path = f"./{user_id}.zip"
     destination_directory = f"./Users EKM zip/{user_id}.zip"
     shutil.move(source_file_path, destination_directory)
