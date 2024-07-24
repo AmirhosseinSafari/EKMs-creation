@@ -299,7 +299,7 @@ def little_ekm_no_2_dataset(lead_data, sampling_rate, dataset_name, ekms_path, k
     fig_width_px = 33
     fig_height_px = 21
 
-    window_size = 4 # seconds
+    window_size = sbf # seconds
     init_window = 0
 
     # print("  .Getting EKMs")

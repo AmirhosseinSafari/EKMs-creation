@@ -221,7 +221,7 @@ def save_ecm_no_1(dataset_name, path, key, i):
     plt.savefig(f"{path}/{sbf}sbf-ekm-{dataset_name}-{key}-{str(i)}",bbox_inches='tight', pad_inches=0)
 
 
-def little_ekm_no_1_dataset(lead_data, sampling_rate, dataset_name, ekms_path, key, bpf):
+def little_ekm_no_1_dataset(lead_data, sampling_rate, dataset_name, ekms_path, key, sbf):
     # print("  .Preprocessing the signal")
     peaks, filtered_ecg = process_ecg(lead_data , sampling_rate)
 
@@ -236,7 +236,7 @@ def little_ekm_no_1_dataset(lead_data, sampling_rate, dataset_name, ekms_path, k
     fig_width_px = 33
     fig_height_px = 21
 
-    window_size = 4 # seconds
+    window_size = sbf # seconds
     init_window = 0
 
     # print("  .Getting EKMs")
