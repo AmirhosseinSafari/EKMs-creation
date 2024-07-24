@@ -241,7 +241,7 @@ def little_ekm_no_1_dataset(lead_data, sampling_rate, dataset_name, ekms_path, k
 
     # print("  .Getting EKMs")
     while(ekms_counter<total_ecms):
-      if (init_window >= len(norm_ecg)): break
+      if (init_window >= len(norm_ecg) or  init_window + (sampling_rate * window_size) >= len(norm_ecg)): break
       # electrocardiomatrix_no_1
       #   - Inputs: (filtered_ecg, init_window, sampling_rate, window_size)
       ecm = electrocardiomatrix_no_1(norm_ecg, init_window, sampling_rate, window_size)
