@@ -114,50 +114,48 @@ def save_ecm_no_1(dataset_name, path, key, i):
     # Saving EKMs in format of {path}/_NumberOfbpfsInAEKM_bpf-ekm-{key=user id}-{i=serial Number}
     plt.savefig(f"{path}/{sbf}sbf-ekm-{dataset_name}-{key}-{str(i)}",bbox_inches='tight', pad_inches=0)
 
-def little_ekm_dataset_shifted(lead_data, sampling_rate, dataset_name, ekms_path, key, shift_amount):
-  print("Shifting the raw signal")
-  shifted_signal = lead_data[int(shift_amount * sampling_rate):]
+def little_ekm_dataset_shifted(lead_data, sampling_rate, dataset_name, ekms_path, key, sbf, shift_amount):
+    print("Shifting the raw signal")
+    shifted_signal = lead_data[int(shift_amount * sampling_rate):]
 
-  print("  .Preprocessing the signal")
-  peaks, filtered_ecg = process_ecg(shifted_signal , sampling_rate)
+    # print("  .Preprocessing the signal")
+    peaks, filtered_ecg = process_ecg(shifted_signal , sampling_rate)
 
-  print("  .Getting detrend_signal, norm_ecg, distance")
-  detrend_signal = detrend(filtered_ecg)
-  norm_ecg = normalize(detrend_signal)
-  distance = peak_distance(peaks)
+    # print("  .Getting detrend_signal, norm_ecg, distance")
+    detrend_signal = detrend(filtered_ecg)
+    norm_ecg = normalize(detrend_signal)
+    distance = peak_distance(peaks)
 
-  # by fs=200, 2 seconds will be 10 bpf
-  # bpf => 2(s) / 200 * 0.001
-  # bpf = 10
-  # peaks_window = bpf-1
+    ekms_counter, init_window = 0, 0
+    total_ecms = 3000
 
-  data_obtained = []
-  distances = []
-  negative = True
-  ekms_counter, init_window = 0, 0
-  total_ecms = 3000
+    fig_width_px = 33
+    fig_height_px = 21
 
-  fig_width_px = 33
-  fig_height_px = 21
+    window_size = sbf # seconds
+    init_window = 0
 
-  print("  .Getting EKMs")
-  while(ekms_counter<total_ecms):
-    if (init_window >= len(peaks)) or (init_window >= len(peaks)-1): break
-    ecm = electrocardiomatrix_no_1(distance, peaks, norm_ecg, init_window, peaks_window)
-    if ecm is None: break
-    distance = int(distance)
-    norm_ecm = normalize(ecm)
+    # print("  .Getting EKMs")
+    while(ekms_counter<total_ecms):
+      if (init_window >= len(norm_ecg) or  init_window + (sampling_rate * window_size) >= len(norm_ecg)): break
+      # electrocardiomatrix_no_1
+      #   - Inputs: (filtered_ecg, init_window, sampling_rate, window_size)
+      ecm = electrocardiomatrix_no_1(norm_ecg, init_window, sampling_rate, window_size)
+      if ecm is None: break
+      distance = int(distance)
+      norm_ecm = normalize(ecm)
 
-    fig = plt.figure(num=1, clear=True, figsize=(fig_width_px / 80, fig_height_px / 80))
-    ax = fig.add_subplot()
-    ax.axis('off')
+      fig = plt.figure(num=1, clear=True, figsize=(fig_width_px / 80, fig_height_px / 80))
+      ax = fig.add_subplot()
+      ax.axis('off')
 
-    sns.heatmap(norm_ecm, xticklabels=False, yticklabels=False, cbar=False)
-    # plt.tight_layout()
+      sns.heatmap(norm_ecm, xticklabels=False, yticklabels=False, cbar=False)
+      # plt.tight_layout()
 
-    save_ecm_no_1(dataset_name, ekms_path, key, ekms_counter)
-    ekms_counter += 1
-    # break
+      save_ecm_no_1(dataset_name, ekms_path, key, ekms_counter)
+      init_window += (sampling_rate * window_size)
+      ekms_counter += 1
+      # break
 
 def user_ekm_no_1_shifted_dataset(ecg_file, shared_counter_, lock, total_elements, shifted_amount):
     # print(f"\n{ecg_file}")
