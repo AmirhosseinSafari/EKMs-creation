@@ -159,7 +159,7 @@ def little_ekm_dataset_shifted(lead_data, sampling_rate, dataset_name, ekms_path
     ekms_counter += 1
     # break
 
-def user_ekm_no_1_shifted_dataset(ecg_file, shared_counter_, lock, total_elements):
+def user_ekm_no_1_shifted_dataset(ecg_file, shared_counter_, lock, total_elements, shifted_amount):
     # print(f"\n{ecg_file}")
     
     ecg_file_path = dataset_path + "/" + ecg_file
@@ -181,7 +181,7 @@ def user_ekm_no_1_shifted_dataset(ecg_file, shared_counter_, lock, total_element
         # pretier_print("begin", int(user_id), name_of_file)
 
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
-        little_ekm_dataset_shifted(lead_data.data, sampling_rate, dataset_name, lead_path, user_id, sbf)
+        little_ekm_dataset_shifted(lead_data.data, sampling_rate, dataset_name, lead_path, user_id, sbf, shifted_amount)
 
         # pretier_print("end", int(user_id), ecg_file)
 

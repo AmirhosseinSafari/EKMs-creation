@@ -8,6 +8,8 @@ import multiprocessing
 
 ## Initial variables (codes for different status)
 
+shifted_amount = 0.5
+
 # default values for fields that may be set/edited by the user
 header_field_defaults = {
     'file_version':  -9,
@@ -148,7 +150,7 @@ def processing_ecg_files(users_ecg_files_chunk):
         # Create a pool of processes
         with multiprocessing.Pool(processes=num_processes) as pool:
             # Pass the shared counter, lock, and total number of elements to the worker function
-            pool.starmap(user_ekm_no_1_shifted_dataset, [(user, shared_counter, lock, len(users_ecg_files_chunk)) for user in users_ecg_files_chunk])
+            pool.starmap(user_ekm_no_1_shifted_dataset, [(user, shared_counter, lock, len(users_ecg_files_chunk), shifted_amount) for user in users_ecg_files_chunk])
 
 
 for users_ecg_files_chunk in users_ecg_files_chunks:
