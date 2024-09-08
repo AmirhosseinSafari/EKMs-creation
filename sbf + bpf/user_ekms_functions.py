@@ -10,7 +10,7 @@ from scipy.signal import detrend
 import seaborn as sns
 
 dataset_path = "./ecg_200"
-dataset_name = "no1_ekm_dataset"
+dataset_name = "sbf+bpf_ekm_dataset"
 base_ekms_path = f'EKM_dataset'
 lead_names_dict = {
     1: "x_lead",
