@@ -345,6 +345,7 @@ if number_of_complete_slices * slices_size != len(users_ecg_files):
     users_ecg_files_chunks.append(users_ecg_files[number_of_complete_slices * slices_size:])
 
 def processing_ecg_files(users_ecg_files_chunk):
+    print(users_ecg_files_chunk)
     with multiprocessing.Manager() as manager:
         # Create a shared counter
         shared_counter = manager.Value('i', 0)
