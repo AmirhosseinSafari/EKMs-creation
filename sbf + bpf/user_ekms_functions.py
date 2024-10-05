@@ -222,7 +222,7 @@ def user_ekm_sbf_bpf_dataset_single_thread(ecg_file):
     '''
     Just implementing the single thread version of sbf+bpf EKMs
     '''
-    # print(f"\n{ecg_file}")
+    print(f"\n{ecg_file}")
     
     ecg_file_path = dataset_path + "/" + ecg_file
     user_leads_all_data = Holter(ecg_file_path)
@@ -241,6 +241,7 @@ def user_ekm_sbf_bpf_dataset_single_thread(ecg_file):
     for _, lead_data in enumerate(user_leads_signals):
         # name_of_file = ecg_file + ": " + lead_names_dict[_ + 1]
         # pretier_print("begin", int(user_id), name_of_file)
+        print(lead_names_dict[_ + 1])
 
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
         little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, user_id, sbf)
