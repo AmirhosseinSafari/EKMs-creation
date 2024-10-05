@@ -217,3 +217,37 @@ def user_ekm_sbf_bpf_dataset(ecg_file, shared_counter_, lock, total_elements):
         processed_elements = shared_counter_.value
         percentage_completion = (processed_elements / total_elements) * 100
         print(f"Processed {processed_elements}/{total_elements} elements ({percentage_completion:.2f}% complete)")
+
+def user_ekm_sbf_bpf_dataset_single_thread(ecg_file):
+    '''
+    Just implementing the single thread version of sbf+bpf EKMs
+    '''
+    # print(f"\n{ecg_file}")
+    
+    ecg_file_path = dataset_path + "/" + ecg_file
+    user_leads_all_data = Holter(ecg_file_path)
+    user_leads_all_data.load_data()
+
+    x_lead = user_leads_all_data.lead[0]
+    y_lead = user_leads_all_data.lead[1]
+    z_lead = user_leads_all_data.lead[2]
+
+    user_leads_signals = [x_lead, y_lead, z_lead]
+    user_id = ecg_file.split(".")[0]
+    sampling_rate = user_leads_all_data.sr
+
+    user_EKMs_dir_creator(user_id)
+
+    for _, lead_data in enumerate(user_leads_signals):
+        # name_of_file = ecg_file + ": " + lead_names_dict[_ + 1]
+        # pretier_print("begin", int(user_id), name_of_file)
+
+        lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
+        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, user_id, sbf)
+
+        # pretier_print("end", int(user_id), ecg_file)
+
+    shutil.make_archive(user_id, format='zip', root_dir=f'./EKM_dataset_{user_id}')
+    source_file_path = f"./{user_id}.zip"
+    destination_directory = f"./Users EKM zip/{user_id}.zip"
+    shutil.move(source_file_path, destination_directory)
