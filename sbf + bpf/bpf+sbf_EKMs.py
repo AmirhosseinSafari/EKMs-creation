@@ -4,6 +4,7 @@ import os
 # len(os.listdir("./ecg_200"))
 # from user_ekm_functions import user_ekm_dataset
 from user_ekm_functions import user_ekm_sbf_bpf_dataset
+from user_ekm_functions import user_ekm_sbf_bpf_dataset_single_thread
 import multiprocessing
 
 ## Initial variables (codes for different status)
@@ -124,35 +125,39 @@ for usr in list_of_ekm_extracted_users:
 
 ### Multi processing
 
-# Specify the number of processes in the pool
-num_processes = multiprocessing.cpu_count()
-# num_processes = 30
+# # Specify the number of processes in the pool
+# num_processes = multiprocessing.cpu_count()
+# # num_processes = 30
 
-# Creating slices of users' ecg file for multiprocessing
-# Necessety: there were some bugs in server with all amounts of users' ecg files
-slices_size = 50
-number_of_complete_slices = len(users_ecg_files)//slices_size
-users_ecg_files_chunks = [users_ecg_files[_ * slices_size: (_+1) * slices_size] for _ in range(number_of_complete_slices)]
+# # Creating slices of users' ecg file for multiprocessing
+# # Necessety: there were some bugs in server with all amounts of users' ecg files
+# slices_size = 50
+# number_of_complete_slices = len(users_ecg_files)//slices_size
+# users_ecg_files_chunks = [users_ecg_files[_ * slices_size: (_+1) * slices_size] for _ in range(number_of_complete_slices)]
 
-if number_of_complete_slices * slices_size != len(users_ecg_files):
-    users_ecg_files_chunks.append(users_ecg_files[number_of_complete_slices * slices_size:])
+# if number_of_complete_slices * slices_size != len(users_ecg_files):
+#     users_ecg_files_chunks.append(users_ecg_files[number_of_complete_slices * slices_size:])
 
-def processing_ecg_files(users_ecg_files_chunk):
-    with multiprocessing.Manager() as manager:
-        # Create a shared counter
-        shared_counter = manager.Value('i', 0)
+# def processing_ecg_files(users_ecg_files_chunk):
+#     with multiprocessing.Manager() as manager:
+#         # Create a shared counter
+#         shared_counter = manager.Value('i', 0)
 
-        # Create a lock from the manager
-        lock = manager.Lock()
+#         # Create a lock from the manager
+#         lock = manager.Lock()
 
-        # Create a pool of processes
-        with multiprocessing.Pool(processes=num_processes) as pool:
-            # Pass the shared counter, lock, and total number of elements to the worker function
-            pool.starmap(user_ekm_sbf_bpf_dataset, [(user, shared_counter, lock, len(users_ecg_files_chunk)) for user in users_ecg_files_chunk])
+#         # Create a pool of processes
+#         with multiprocessing.Pool(processes=num_processes) as pool:
+#             # Pass the shared counter, lock, and total number of elements to the worker function
+#             pool.starmap(user_ekm_sbf_bpf_dataset, [(user, shared_counter, lock, len(users_ecg_files_chunk)) for user in users_ecg_files_chunk])
 
 
-for users_ecg_files_chunk in users_ecg_files_chunks:
-    processing_ecg_files(users_ecg_files_chunk)
+# for users_ecg_files_chunk in users_ecg_files_chunks:
+#     processing_ecg_files(users_ecg_files_chunk)
 
-# Print final progress
-print("Processing complete.")
+# # Print final progress
+# print("Processing complete.")
+
+# Single Thread EKM extractor
+for user_ecg_files in users_ecg_files:
+    user_ekm_sbf_bpf_dataset_single_thread(user_ecg_files)
