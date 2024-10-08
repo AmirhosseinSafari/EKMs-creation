@@ -206,7 +206,8 @@ def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path
       #   - Inputs: (distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate)
       ecm = electrocardiomatrix_sbf_bpf_complete_EKMs(distance, peaks, filtered_ecg, ekms_counter, sampling_rate)
       if ecm is None: break
-      if ecm == "Not enough peaks": continue
+      if isinstance(ecm, str):
+        if ecm == "Not enough peaks": continue
       distance = int(distance)
       norm_ecm = normalize(ecm)
 
