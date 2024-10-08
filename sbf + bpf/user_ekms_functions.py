@@ -123,13 +123,54 @@ def electrocardiomatrix_sbf_bpf(distance, r_peaks, filtered_ecg, EKM_counter, sa
     for peak in r_peaks_one_EKM:
         segment = filtered_ecg[peak - start_delay : peak + fin_seg]
         all_segments.append(segment)
-    
+
     norm_all_segments = normalize(all_segments)
 
     # Zero padding when there are less r_peaks than bpf amount
     if defficient_peaks_flag == True:
         zeros = np.zeros(len(segment))
         norm_all_segments = np.vstack((norm_all_segments, zeros))
+    
+    return norm_all_segments
+
+def electrocardiomatrix_sbf_bpf_complete_EKMs(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate):
+    '''
+    Creating sbf+bpf EKM
+    '''
+    fin_seg = int(1.5 * distance)
+    sbf = 6
+    bpf = 5
+    # Defining start distance/delay which is the distance till first peak
+    start_delay = r_peaks[0]
+    one_EKM_signal_size = sbf * sampling_rate
+
+    # Getting r peaks of one EKM (bpf + sbf)
+    r_peaks_one_EKM = []
+    for r_peak_ind in r_peaks:
+        lower_bound = one_EKM_signal_size * (EKM_counter)
+        upper_bound = one_EKM_signal_size * (EKM_counter + 1)
+        if r_peak_ind <= upper_bound and r_peak_ind >= lower_bound:
+            r_peaks_one_EKM.append(r_peak_ind)
+
+    # Checking if there are enough r_peaks in the signal or not
+    defficient_peaks_flag = False
+    if len(r_peaks_one_EKM) >= bpf:
+        r_peaks_one_EKM = r_peaks_one_EKM[0:bpf]
+    else:
+        defficient_peaks_flag = True
+
+    # Returning if the EKM have not enough R peaks
+    if defficient_peaks_flag == True:
+        ekm = "Not enough peaks"
+        return ekm
+    
+    # Getting the segments
+    all_segments = []
+    for peak in r_peaks_one_EKM:
+        segment = filtered_ecg[peak - start_delay : peak + fin_seg]
+        all_segments.append(segment)
+
+    norm_all_segments = normalize(all_segments)
     
     return norm_all_segments
 
@@ -163,8 +204,9 @@ def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path
       if (init_window >= len(norm_ecg) or  init_window + (sampling_rate * window_size) >= len(norm_ecg)): break
       # electrocardiomatrix_sbf_bpf
       #   - Inputs: (distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate)
-      ecm = electrocardiomatrix_sbf_bpf(distance, peaks, filtered_ecg, ekms_counter, sampling_rate)
+      ecm = electrocardiomatrix_sbf_bpf_complete_EKMs(distance, peaks, filtered_ecg, ekms_counter, sampling_rate)
       if ecm is None: break
+      if ecm is "Not enough peaks": continue
       distance = int(distance)
       norm_ecm = normalize(ecm)
 
