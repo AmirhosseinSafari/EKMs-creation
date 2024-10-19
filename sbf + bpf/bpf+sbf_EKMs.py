@@ -84,6 +84,7 @@ z_lead = all_data.lead[2]
 
 dataset_path = "./ecg_200"
 users_files = os.listdir(dataset_path)
+users_files.remove("clinicalData-selected")
 # len(users_files)
 
 # Getting .ecg files of users
