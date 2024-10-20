@@ -196,9 +196,14 @@ def write_dict_to_file(my_dict, file_path):
     """
     Writes a dictionary to a specified file in JSON format.
     """
+    def convert_ndarray(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()  # Convert NumPy array to list
+        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
     try:
         with open(file_path, 'w') as file:
-            json.dump(my_dict, file, indent=4)
+            json.dump(my_dict, file, indent=4, default=convert_ndarray)
     except Exception as e:
         print(f"An error occurred: {e}")
 
