@@ -368,6 +368,7 @@ def user_ekm_sbf_bpf_dataset_single_thread(ecg_file):
     sampling_rate = user_leads_all_data.sr
 
     user_EKMs_dir_creator(user_id)
+    user_r_peaks_of_EKMs_dir_creator(user_id)
 
     for _, lead_data in enumerate(user_leads_signals):
         # name_of_file = ecg_file + ": " + lead_names_dict[_ + 1]
