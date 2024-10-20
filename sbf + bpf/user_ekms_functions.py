@@ -190,9 +190,12 @@ def electrocardiomatrix_sbf_bpf_complete_EKMs(distance, r_peaks, filtered_ecg, E
     upper_bound = one_EKM_signal_size * (EKM_counter + 1)
 
     # Defining start distance/delay which is the distance till first peak
-    indices = np.where(r_peaks > lower_bound)[0]
-    first_ekm_rpeak_index = indices[0] if indices.size > 0 else -1
-    start_delay = first_ekm_rpeak_index - lower_bound
+    # filtered_elements = arr[arr > lower_bound]
+    # first_element = filtered_elements[0] if filtered_elements.size > 0 else None
+
+    filtered_peaks = r_peaks[r_peaks > lower_bound]
+    first_ekm_rpeak = filtered_peaks[0] if filtered_peaks.size > 0 else (_ for _ in ()).throw(KeyError("No element found"))
+    start_delay = first_ekm_rpeak - lower_bound
 
     # Getting r peaks of one EKM (bpf + sbf)
     r_peaks_one_EKM = r_peaks[(r_peaks >= lower_bound) & (r_peaks <= upper_bound)]
