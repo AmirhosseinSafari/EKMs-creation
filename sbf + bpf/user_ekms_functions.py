@@ -8,10 +8,12 @@ import matplotlib.pyplot as plt
 import biosignalsnotebooks as bsnb
 from scipy.signal import detrend
 import seaborn as sns
+import json
 
 dataset_path = "./ecg_200"
 dataset_name = "sbf+bpf_ekm_dataset"
 base_ekms_path = f'EKM_dataset'
+base_rpeaks_path = f'Rpeaks_dataset'
 lead_names_dict = {
     1: "x_lead",
     2: "y_lead",
@@ -85,6 +87,21 @@ def user_EKMs_dir_creator(user_id):
     os.makedirs(f"./{base_ekms_path}_{user_id}/x_lead")
     os.makedirs(f"./{base_ekms_path}_{user_id}/y_lead")
     os.makedirs(f"./{base_ekms_path}_{user_id}/z_lead")
+  except OSError as e:
+    print(f"Error: {e}")
+
+def user_r_peaks_of_EKMs_dir_creator(user_id):
+  # Removing previous EKM dir and creating new one
+  try:
+    shutil.rmtree(f"./{base_rpeaks_path}_{user_id}")
+  except OSError as e:
+    pass
+
+  try:
+    os.mkdir(f"./{base_rpeaks_path}_{user_id}")
+    os.makedirs(f"./{base_rpeaks_path}_{user_id}/x_lead")
+    os.makedirs(f"./{base_rpeaks_path}_{user_id}/y_lead")
+    os.makedirs(f"./{base_rpeaks_path}_{user_id}/z_lead")
   except OSError as e:
     print(f"Error: {e}")
 
@@ -175,6 +192,16 @@ def electrocardiomatrix_sbf_bpf_complete_EKMs_fixed_shift(distance, r_peaks, fil
     
     return norm_all_segments
 
+def write_dict_to_file(my_dict, file_path):
+    """
+    Writes a dictionary to a specified file in JSON format.
+    """
+    try:
+        with open(file_path, 'w') as file:
+            json.dump(my_dict, file, indent=4)
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
 def electrocardiomatrix_sbf_bpf_complete_EKMs(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate):
     '''
     Creating sbf+bpf EKM
@@ -220,7 +247,7 @@ def electrocardiomatrix_sbf_bpf_complete_EKMs(distance, r_peaks, filtered_ecg, E
 
     norm_all_segments = normalize(all_segments)
     
-    return norm_all_segments
+    return norm_all_segments, r_peaks_one_EKM, [lower_bound, upper_bound]
 
 # Labeling is in this way that, prelast element of EKM's name is the user's id,
 # and the last element is the number of the EKM for that user
@@ -228,8 +255,16 @@ def save_ecm_sbf_bpf(dataset_name, path, key, i):
     # Saving EKMs in format of {path}/_NumberOfbpfsInAEKM_bpf-ekm-{key=user id}-{i=serial Number}
     plt.savefig(f"{path}/{sbf}sbf-{bpf}bpf-ekm-{dataset_name}-{key}-{str(i)}",bbox_inches='tight', pad_inches=0)
 
+def save_rpeaks_sbf_bpf(rpeaks, boundaris, dataset_name, path, key, i):
+    # Saving the rpeaks coresponding to their EKMs
+    r_peak_dict = {
+        "rpeaks" : rpeaks,
+        "boundaris" : boundaris
+    }
+    saving_path = f"{path}/{sbf}sbf-{bpf}bpf-rpeaks-{dataset_name}-{key}-{str(i)}"
+    write_dict_to_file(r_peak_dict, saving_path)
 
-def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path, key, sbf):
+def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path, rpeaks_path, key, sbf):
     # print("  .Preprocessing the signal")
     peaks, filtered_ecg = process_ecg(lead_data , sampling_rate)
 
@@ -252,7 +287,7 @@ def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path
       if (init_window >= len(norm_ecg) or  init_window + (sampling_rate * window_size) >= len(norm_ecg)): break
       # electrocardiomatrix_sbf_bpf
       #   - Inputs: (distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate)
-      ecm = electrocardiomatrix_sbf_bpf_complete_EKMs(distance, peaks, norm_ecg, ekms_counter, sampling_rate)
+      ecm, rpeaks, boundaris = electrocardiomatrix_sbf_bpf_complete_EKMs(distance, peaks, norm_ecg, ekms_counter, sampling_rate)
       if ecm is None: break
       if isinstance(ecm, str):
         if ecm == "Not enough peaks": continue
@@ -267,6 +302,8 @@ def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path
       # plt.tight_layout()
 
       save_ecm_sbf_bpf(dataset_name, ekms_path, key, ekms_counter)
+      save_rpeaks_sbf_bpf(rpeaks, boundaris, dataset_name, rpeaks_path, key, ekms_counter)
+
       init_window += (sampling_rate * window_size)
       ekms_counter += 1
       # break
@@ -293,7 +330,9 @@ def user_ekm_sbf_bpf_dataset(ecg_file, shared_counter_, lock, total_elements):
         # pretier_print("begin", int(user_id), name_of_file)
 
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
-        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, user_id, sbf)
+        rpeaks_path = f"{base_rpeaks_path}_{user_id}/{lead_names_dict[_ + 1]}"
+        
+        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, rpeaks_path, user_id, sbf)
 
         # pretier_print("end", int(user_id), ecg_file)
 
