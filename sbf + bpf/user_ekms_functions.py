@@ -213,7 +213,7 @@ def electrocardiomatrix_sbf_bpf_complete_EKMs_fixed_shift(distance, r_peaks, fil
     # Returning if the EKM have not enough R peaks
     if defficient_peaks_flag == True:
         ekm = "Not enough peaks"
-        return ekm
+        return ekm, r_peaks_one_EKM, [lower_bound, upper_bound]
     
     # Getting the segments
     all_segments = []
