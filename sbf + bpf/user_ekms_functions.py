@@ -15,6 +15,7 @@ dataset_name = "sbf+bpf_ekm_dataset"
 base_ekms_path = f'EKM_dataset'
 base_rpeaks_path = f'Rpeaks_dataset'
 base_rpeaks_failure_path = f'Rpeaks_failure_dataset'
+base_distance = f'R_R_distance_dataset'
 
 lead_names_dict = {
     1: "x_lead",
@@ -119,6 +120,21 @@ def user_r_peaks_of_failure_EKMs_dir_creator(user_id):
     os.makedirs(f"./{base_rpeaks_failure_path}_{user_id}/x_lead")
     os.makedirs(f"./{base_rpeaks_failure_path}_{user_id}/y_lead")
     os.makedirs(f"./{base_rpeaks_failure_path}_{user_id}/z_lead")
+  except OSError as e:
+    print(f"Error: {e}")
+
+def user_R_R_distance_dir_creator(user_id):
+   # Removing previous EKM dir and creating new one
+  try:
+    shutil.rmtree(f"./{base_distance}_{user_id}")
+  except OSError as e:
+    pass
+
+  try:
+    os.mkdir(f"./{base_distance}_{user_id}")
+    os.makedirs(f"./{base_distance}_{user_id}/x_lead")
+    os.makedirs(f"./{base_distance}_{user_id}/y_lead")
+    os.makedirs(f"./{base_distance}_{user_id}/z_lead")
   except OSError as e:
     print(f"Error: {e}")
 
@@ -295,7 +311,15 @@ def save_rpeaks_failure_sbf_bpf(rpeaks, boundaris, dataset_name, path, key, i):
     saving_path = f"{path}/{sbf}sbf-{bpf}bpf-rpeaks-failure-{dataset_name}-{key}-{str(i)}"
     write_dict_to_file(r_peak_dict, saving_path)
 
-def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path, rpeaks_path, rpeaks_failure_path, key, sbf):
+def save_distance_sbf_bpf(key, distance, dataset_name, r_r_distance_path):
+    distance_info = {
+       "user_id": key,
+       "R-R_distance": distance
+    }
+    saving_path = f"{r_r_distance_path}/{sbf}sbf-{bpf}bpf-R-R-distance-{dataset_name}-{key}"
+    write_dict_to_file(distance_info, saving_path)
+
+def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path, rpeaks_path, rpeaks_failure_path, r_r_distance_path, key, sbf):
     # print("  .Preprocessing the signal")
     peaks, filtered_ecg = process_ecg(lead_data , sampling_rate)
 
@@ -303,6 +327,9 @@ def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path
     detrend_signal = detrend(filtered_ecg)
     norm_ecg = normalize(detrend_signal)
     distance = peak_distance(peaks)
+
+    # Saving the R-R distance of each lead of the user
+    save_distance_sbf_bpf(key, distance, dataset_name, r_r_distance_path)
 
     ekms_counter, init_window = 0, 0
     total_ecms = 3000
@@ -359,6 +386,7 @@ def user_ekm_sbf_bpf_dataset(ecg_file, shared_counter_, lock, total_elements):
     user_EKMs_dir_creator(user_id)
     user_r_peaks_of_EKMs_dir_creator(user_id)
     user_r_peaks_of_failure_EKMs_dir_creator(user_id)
+    user_R_R_distance_dir_creator(user_id)
 
     for _, lead_data in enumerate(user_leads_signals):
         # name_of_file = ecg_file + ": " + lead_names_dict[_ + 1]
@@ -367,8 +395,9 @@ def user_ekm_sbf_bpf_dataset(ecg_file, shared_counter_, lock, total_elements):
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
         rpeaks_path = f"{base_rpeaks_path}_{user_id}/{lead_names_dict[_ + 1]}"
         rpeaks_failure_path = f"{base_rpeaks_failure_path}_{user_id}/{lead_names_dict[_ + 1]}"
+        r_r_distance_path = f"{base_rpeaks_failure_path}_{user_id}/{lead_names_dict[_ + 1]}"
         
-        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, rpeaks_path, rpeaks_failure_path, user_id, sbf)
+        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, rpeaks_path, rpeaks_failure_path, r_r_distance_path, user_id, sbf)
 
         # pretier_print("end", int(user_id), ecg_file)
 
