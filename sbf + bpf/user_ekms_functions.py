@@ -395,7 +395,7 @@ def user_ekm_sbf_bpf_dataset(ecg_file, shared_counter_, lock, total_elements):
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
         rpeaks_path = f"{base_rpeaks_path}_{user_id}/{lead_names_dict[_ + 1]}"
         rpeaks_failure_path = f"{base_rpeaks_failure_path}_{user_id}/{lead_names_dict[_ + 1]}"
-        r_r_distance_path = f"{base_rpeaks_failure_path}_{user_id}/{lead_names_dict[_ + 1]}"
+        r_r_distance_path = f"{base_distance}_{user_id}/{lead_names_dict[_ + 1]}"
         
         little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, rpeaks_path, rpeaks_failure_path, r_r_distance_path, user_id, sbf)
 
