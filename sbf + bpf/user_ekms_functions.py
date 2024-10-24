@@ -14,6 +14,8 @@ dataset_path = "./ecg_200"
 dataset_name = "sbf+bpf_ekm_dataset"
 base_ekms_path = f'EKM_dataset'
 base_rpeaks_path = f'Rpeaks_dataset'
+base_rpeaks_failure_path = f'Rpeaks_failure_dataset'
+
 lead_names_dict = {
     1: "x_lead",
     2: "y_lead",
@@ -102,6 +104,21 @@ def user_r_peaks_of_EKMs_dir_creator(user_id):
     os.makedirs(f"./{base_rpeaks_path}_{user_id}/x_lead")
     os.makedirs(f"./{base_rpeaks_path}_{user_id}/y_lead")
     os.makedirs(f"./{base_rpeaks_path}_{user_id}/z_lead")
+  except OSError as e:
+    print(f"Error: {e}")
+
+def user_r_peaks_of_failure_EKMs_dir_creator(user_id):
+  # Removing previous EKM dir and creating new one
+  try:
+    shutil.rmtree(f"./{base_rpeaks_failure_path}_{user_id}")
+  except OSError as e:
+    pass
+
+  try:
+    os.mkdir(f"./{base_rpeaks_failure_path}_{user_id}")
+    os.makedirs(f"./{base_rpeaks_failure_path}_{user_id}/x_lead")
+    os.makedirs(f"./{base_rpeaks_failure_path}_{user_id}/y_lead")
+    os.makedirs(f"./{base_rpeaks_failure_path}_{user_id}/z_lead")
   except OSError as e:
     print(f"Error: {e}")
 
@@ -242,7 +259,7 @@ def electrocardiomatrix_sbf_bpf_complete_EKMs(distance, r_peaks, filtered_ecg, E
     # Returning if the EKM have not enough R peaks
     if defficient_peaks_flag == True:
         ekm = "Not enough peaks"
-        return ekm
+        return ekm, r_peaks_one_EKM, [lower_bound, upper_bound]
     
     # Getting the segments
     all_segments = []
@@ -269,7 +286,16 @@ def save_rpeaks_sbf_bpf(rpeaks, boundaris, dataset_name, path, key, i):
     saving_path = f"{path}/{sbf}sbf-{bpf}bpf-rpeaks-{dataset_name}-{key}-{str(i)}"
     write_dict_to_file(r_peak_dict, saving_path)
 
-def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path, rpeaks_path, key, sbf):
+def save_rpeaks_failure_sbf_bpf(rpeaks, boundaris, dataset_name, path, key, i):
+    # Saving the rpeaks coresponding to their EKMs
+    r_peak_dict = {
+        "rpeaks" : rpeaks,
+        "boundaris" : boundaris
+    }
+    saving_path = f"{path}/{sbf}sbf-{bpf}bpf-rpeaks-failure-{dataset_name}-{key}-{str(i)}"
+    write_dict_to_file(r_peak_dict, saving_path)
+
+def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path, rpeaks_path, rpeaks_failure_path, key, sbf):
     # print("  .Preprocessing the signal")
     peaks, filtered_ecg = process_ecg(lead_data , sampling_rate)
 
@@ -295,7 +321,9 @@ def little_ekm_sbf_bpf_dataset(lead_data, sampling_rate, dataset_name, ekms_path
       ecm, rpeaks, boundaris = electrocardiomatrix_sbf_bpf_complete_EKMs(distance, peaks, norm_ecg, ekms_counter, sampling_rate)
       if ecm is None: break
       if isinstance(ecm, str):
-        if ecm == "Not enough peaks": continue
+        if ecm == "Not enough peaks": 
+            save_rpeaks_failure_sbf_bpf(rpeaks, boundaris, dataset_name, rpeaks_failure_path, key, ekms_counter)
+            continue
       distance = int(distance)
       norm_ecm = normalize(ecm)
 
@@ -330,6 +358,7 @@ def user_ekm_sbf_bpf_dataset(ecg_file, shared_counter_, lock, total_elements):
 
     user_EKMs_dir_creator(user_id)
     user_r_peaks_of_EKMs_dir_creator(user_id)
+    user_r_peaks_of_failure_EKMs_dir_creator(user_id)
 
     for _, lead_data in enumerate(user_leads_signals):
         # name_of_file = ecg_file + ": " + lead_names_dict[_ + 1]
@@ -337,8 +366,9 @@ def user_ekm_sbf_bpf_dataset(ecg_file, shared_counter_, lock, total_elements):
 
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
         rpeaks_path = f"{base_rpeaks_path}_{user_id}/{lead_names_dict[_ + 1]}"
+        rpeaks_failure_path = f"{base_rpeaks_failure_path}_{user_id}/{lead_names_dict[_ + 1]}"
         
-        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, rpeaks_path, user_id, sbf)
+        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, rpeaks_path, rpeaks_failure_path, user_id, sbf)
 
         # pretier_print("end", int(user_id), ecg_file)
 
