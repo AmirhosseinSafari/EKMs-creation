@@ -433,6 +433,8 @@ def user_ekm_sbf_bpf_dataset_single_thread(ecg_file):
 
     user_EKMs_dir_creator(user_id)
     user_r_peaks_of_EKMs_dir_creator(user_id)
+    user_r_peaks_of_failure_EKMs_dir_creator(user_id)
+    user_R_R_distance_dir_creator(user_id)
 
     for _, lead_data in enumerate(user_leads_signals):
         # name_of_file = ecg_file + ": " + lead_names_dict[_ + 1]
@@ -440,7 +442,11 @@ def user_ekm_sbf_bpf_dataset_single_thread(ecg_file):
         print(lead_names_dict[_ + 1])
 
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
-        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, user_id, sbf)
+        rpeaks_path = f"{base_rpeaks_path}_{user_id}/{lead_names_dict[_ + 1]}"
+        rpeaks_failure_path = f"{base_rpeaks_failure_path}_{user_id}/{lead_names_dict[_ + 1]}"
+        r_r_distance_path = f"{base_distance}_{user_id}/{lead_names_dict[_ + 1]}"
+        
+        little_ekm_sbf_bpf_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, rpeaks_path, rpeaks_failure_path, r_r_distance_path, user_id, sbf)
 
         # pretier_print("end", int(user_id), ecg_file)
 
