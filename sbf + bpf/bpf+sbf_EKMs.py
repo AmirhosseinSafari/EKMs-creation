@@ -132,7 +132,7 @@ num_processes = multiprocessing.cpu_count()
 
 # Creating slices of users' ecg file for multiprocessing
 # Necessety: there were some bugs in server with all amounts of users' ecg files
-slices_size = 50
+slices_size = num_processes
 number_of_complete_slices = len(users_ecg_files)//slices_size
 users_ecg_files_chunks = [users_ecg_files[_ * slices_size: (_+1) * slices_size] for _ in range(number_of_complete_slices)]
 
