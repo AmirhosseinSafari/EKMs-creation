@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import biosignalsnotebooks as bsnb
 from scipy.signal import detrend
 import seaborn as sns
+import json
 
 ########################################
 #           Initial variables
@@ -21,13 +22,16 @@ import seaborn as sns
 dataset_path = "./dataset/ECG_200"
 dataset_name = "ekm_dataset"
 base_ekms_path = f'EKM_dataset'
+base_rpeaks_path = f'Rpeaks_dataset'
+base_distance = f'R_R_distance_dataset'
+
 lead_names_dict = {
     1: "x_lead",
     2: "y_lead",
     3: "z_lead"
 }
 
-bpf = 6
+bpf = 5
 sbf = 4
 
 # Creating a file to put the outputs there
@@ -114,7 +118,25 @@ def electrocardiomatrix(distance, r_peaks, filtered_ecg, init_window, peaks_wind
       ecm = np.concatenate(all_segments, 1)
     except ValueError:
       return None
-    return ecm.T
+
+    ekm_rpeaks_index = r_peaks[init_window:init_window + peaks_window]
+    
+    return ecm.T, ekm_rpeaks_index
+
+def write_dict_to_file(my_dict, file_path):
+    """
+    Writes a dictionary to a specified file in JSON format.
+    """
+    def convert_ndarray(obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()  # Convert NumPy array to list
+        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+    try:
+        with open(file_path, 'w') as file:
+            json.dump(my_dict, file, indent=4, default=convert_ndarray)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 # Labeling is in this way that, prelast element of EKM's name is the user's id,
 # and the last element is the number of the EKM for that user
@@ -122,8 +144,24 @@ def save_ecm(dataset_name, path, key, i):
     # Saving EKMs in format of {path}/_NumberOfbpfsInAEKM_bpf-ekm-{key=user id}-{i=serial Number}
     plt.savefig(f"{path}/{bpf}bpf-ekm-{dataset_name}-{key}-{str(i)}",bbox_inches='tight', pad_inches=0)
 
+def save_distance_bpf(key, distance, dataset_name, r_r_distance_path):
+    distance_info = {
+       "user_id": key,
+       "R-R_distance": distance
+    }
+    saving_path = f"{r_r_distance_path}/{sbf}sbf-{bpf}bpf-R-R-distance-{dataset_name}-{key}"
+    write_dict_to_file(distance_info, saving_path)
 
-def little_ekm_dataset(lead_data, sampling_rate, dataset_name, ekms_path, key, bpf):
+def save_rpeaks_bpf(rpeaks, ekms_counter, dataset_name, rpeaks_path, key):
+    r_peak_dict = {
+       "user_id": key,
+       "rpeaks": rpeaks,
+       "EKM number" : ekms_counter,
+    }
+    saving_path = f"{rpeaks_path}/{bpf}bpf-rpeaks-{dataset_name}-{key}-{ekms_counter}"
+    write_dict_to_file(r_peak_dict, saving_path)
+
+def little_ekm_dataset(lead_data, sampling_rate, dataset_name, ekms_path, key, rpeaks_path, r_r_distance_path, bpf):
   # print("  .Preprocessing the signal")
   peaks, filtered_ecg = process_ecg(lead_data , sampling_rate)
 
@@ -132,10 +170,10 @@ def little_ekm_dataset(lead_data, sampling_rate, dataset_name, ekms_path, key, b
   norm_ecg = normalize(detrend_signal)
   distance = peak_distance(peaks)
 
+  # Saving the R-R distance of each lead of the user
+  save_distance_bpf(key, distance, dataset_name, r_r_distance_path)
+
   peaks_window = bpf-1
-  data_obtained = []
-  distances = []
-  negative = True
   ekms_counter, init_window = 0, 0
   total_ecms = 3000
 
@@ -145,7 +183,8 @@ def little_ekm_dataset(lead_data, sampling_rate, dataset_name, ekms_path, key, b
   # print("  .Getting EKMs")
   while(ekms_counter<total_ecms):
     if (init_window >= len(peaks)) or (init_window >= len(peaks)-1): break
-    ecm = electrocardiomatrix(distance, peaks, norm_ecg, init_window, peaks_window)
+    ecm, rpeaks = electrocardiomatrix(distance, peaks, norm_ecg, init_window, peaks_window)
+    
     if ecm is None: break
     distance = int(distance)
     norm_ecm = normalize(ecm)
@@ -158,10 +197,11 @@ def little_ekm_dataset(lead_data, sampling_rate, dataset_name, ekms_path, key, b
     # plt.tight_layout()
 
     save_ecm(dataset_name, ekms_path, key, ekms_counter)
+    save_rpeaks_bpf(rpeaks, ekms_counter, dataset_name, rpeaks_path, key)
+
     ekms_counter += 1
     init_window += bpf
 
-#     # break
 
 def user_EKMs_dir_creator(user_id):
   # Removing previous EKM dir and creating new one
@@ -175,6 +215,36 @@ def user_EKMs_dir_creator(user_id):
     os.makedirs(f"./{base_ekms_path}_{user_id}/x_lead")
     os.makedirs(f"./{base_ekms_path}_{user_id}/y_lead")
     os.makedirs(f"./{base_ekms_path}_{user_id}/z_lead")
+  except OSError as e:
+    print(f"Error: {e}")
+
+def user_r_peaks_of_EKMs_dir_creator(user_id):
+  # Removing previous EKM dir and creating new one
+  try:
+    shutil.rmtree(f"./{base_rpeaks_path}_{user_id}")
+  except OSError as e:
+    pass
+
+  try:
+    os.mkdir(f"./{base_rpeaks_path}_{user_id}")
+    os.makedirs(f"./{base_rpeaks_path}_{user_id}/x_lead")
+    os.makedirs(f"./{base_rpeaks_path}_{user_id}/y_lead")
+    os.makedirs(f"./{base_rpeaks_path}_{user_id}/z_lead")
+  except OSError as e:
+    print(f"Error: {e}")
+
+def user_R_R_distance_dir_creator(user_id):
+   # Removing previous EKM dir and creating new one
+  try:
+    shutil.rmtree(f"./{base_distance}_{user_id}")
+  except OSError as e:
+    pass
+
+  try:
+    os.mkdir(f"./{base_distance}_{user_id}")
+    os.makedirs(f"./{base_distance}_{user_id}/x_lead")
+    os.makedirs(f"./{base_distance}_{user_id}/y_lead")
+    os.makedirs(f"./{base_distance}_{user_id}/z_lead")
   except OSError as e:
     print(f"Error: {e}")
 
@@ -194,13 +264,18 @@ def user_ekm_dataset(ecg_file, shared_counter_, lock, total_elements):
     sampling_rate = user_leads_all_data.sr
 
     user_EKMs_dir_creator(user_id)
+    user_r_peaks_of_EKMs_dir_creator(user_id)
+    user_R_R_distance_dir_creator(user_id)
 
     for _, lead_data in enumerate(user_leads_signals):
         # name_of_file = ecg_file + ": " + lead_names_dict[_ + 1]
         # pretier_print("begin", int(user_id), name_of_file)
 
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
-        little_ekm_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, user_id, bpf)
+        rpeaks_path = f"{base_rpeaks_path}_{user_id}/{lead_names_dict[_ + 1]}"
+        r_r_distance_path = f"{base_distance}_{user_id}/{lead_names_dict[_ + 1]}"
+        
+        little_ekm_dataset(lead_data.data, sampling_rate, dataset_name, lead_path, user_id, rpeaks_path, r_r_distance_path, bpf)
 
         # pretier_print("end", int(user_id), ecg_file)
 
