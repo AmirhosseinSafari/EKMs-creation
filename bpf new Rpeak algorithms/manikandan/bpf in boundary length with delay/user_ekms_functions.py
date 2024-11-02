@@ -22,7 +22,7 @@ import neurokit2 as nk
 ########################################
 
 dataset_path = "./dataset/ECG_200"
-dataset_name = "bpf_recording_signal_length_ekm_dataset"
+dataset_name = "bpf_recording_signal_length_with_delay_ekm_dataset"
 base_ekms_path = f'EKM_dataset'
 base_rpeaks_path = f'Rpeaks_dataset'
 base_all_rpeaks_path = f'All_Rpeaks_dataset'
@@ -129,7 +129,7 @@ def save_rpeaks_failure_bpf_recording_signal_length(rpeaks, boundaris, dataset_n
     saving_path = f"{path}/{bpf}bpf-rpeaks-recording-signal-length-failure-{dataset_name}-{key}-{str(i)}"
     write_dict_to_file(r_peak_dict, saving_path)
 
-def electrocardiomatrix_bpf_in_recording_signal_length(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate):
+def electrocardiomatrix_bpf_in_recording_signal_length_with_delay(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate):
     '''
     Creating bpf based EKMs in recording signal length
     '''
@@ -211,7 +211,7 @@ def little_ekm_dataset(lead_data,
   while(ekms_counter<total_ecms):
     if (init_window >= len(norm_ecg) or  init_window + (sampling_rate * window_size) >= len(norm_ecg)): break
     # electrocardiomatrix_bpf_in_recording_signal_length(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate) 
-    ecm, rpeaks, boundaris = electrocardiomatrix_bpf_in_recording_signal_length(distance, peaks, norm_ecg, ekms_counter, sampling_rate)
+    ecm, rpeaks, boundaris = electrocardiomatrix_bpf_in_recording_signal_length_with_delay(distance, peaks, norm_ecg, ekms_counter, sampling_rate)
     if ecm is None: break
     if isinstance(ecm, str):
         if ecm == "Not enough peaks": 
@@ -230,8 +230,8 @@ def little_ekm_dataset(lead_data,
     save_ecm(dataset_name, ekms_path, key, ekms_counter)
     save_rpeaks_bpf(rpeaks, ekms_counter, dataset_name, rpeaks_path, key)
 
-    ekms_counter += (sampling_rate * window_size)
-    init_window += bpf
+    ekms_counter += 1
+    init_window += (sampling_rate * window_size)
 
 def user_EKMs_dir_creator(user_id):
   # Removing previous EKM dir and creating new one
