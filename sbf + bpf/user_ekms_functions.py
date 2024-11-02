@@ -248,6 +248,7 @@ def electrocardiomatrix_sbf_bpf_complete_EKMs(distance, r_peaks, filtered_ecg, E
     fin_seg = int(1.5 * distance)
     sbf = 6
     bpf = 5
+    peaks_window = bpf-1
     one_EKM_signal_size = sbf * sampling_rate
 
     # Definging the lower and upper bound of the 6-second EKM
@@ -267,8 +268,8 @@ def electrocardiomatrix_sbf_bpf_complete_EKMs(distance, r_peaks, filtered_ecg, E
     
     # Checking if there are enough r_peaks in the signal or not
     defficient_peaks_flag = False
-    if len(r_peaks_one_EKM) >= bpf:
-        r_peaks_one_EKM = r_peaks_one_EKM[0:bpf]
+    if len(r_peaks_one_EKM) >= peaks_window:
+        r_peaks_one_EKM = r_peaks_one_EKM[0:peaks_window]
     else:
         defficient_peaks_flag = True
 
