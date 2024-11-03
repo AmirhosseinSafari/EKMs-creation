@@ -28,6 +28,7 @@ base_rpeaks_path = f'Rpeaks_dataset'
 base_all_rpeaks_path = f'All_Rpeaks_dataset'
 base_rpeaks_failure_path = f'Rpeaks_failure_dataset'
 base_distance = f'R_R_distance_dataset'
+test_big_EKM_view_path = "./big_EKMs_view_test"
 
 lead_names_dict = {
     1: "x_lead",
@@ -101,6 +102,16 @@ def write_dict_to_file(my_dict, file_path):
 def save_ecm(dataset_name, path, key, i):
     # Saving EKMs in format of {path}/_NumberOfbpfsInAEKM_bpf-ekm-{key=user id}-{i=serial Number}
     plt.savefig(f"{path}/{bpf}bpf-ekm-{dataset_name}-{key}-{str(i)}",bbox_inches='tight', pad_inches=0)
+
+def big_EKM_view_test(norm_ecm, test_path):
+    # Create a large figure for the heatmap
+    plt.figure(figsize=(16, 12))
+    # Plot heatmap with desired parameters
+    sns.heatmap(norm_ecm, xticklabels=False, yticklabels=False, cbar=False)
+    # Save the heatmap image to the specified path with high resolution
+    plt.savefig(test_path, dpi=300, bbox_inches='tight', pad_inches=0)
+    # Close the plot to free memory
+    plt.close()
 
 def save_distance_bpf(key, distance, dataset_name, r_r_distance_path):
     distance_info = {
@@ -223,6 +234,8 @@ def little_ekm_dataset(lead_data,
             continue
     distance = int(distance)
     norm_ecm = normalize(ecm)
+
+    big_EKM_view_test(norm_ecm, test_big_EKM_view_path)
 
     fig = plt.figure(num=1, clear=True, figsize=(fig_width_px / 80, fig_height_px / 80))
     ax = fig.add_subplot()
