@@ -3,6 +3,8 @@
 ########################################
 
 from ishneholterlib import Holter
+import biosignalsnotebooks as bsnb
+from scipy.signal import detrend
 import os
 # len(os.listdir("./ecg_200"))
 # from user_ekm_functions import user_ekm_dataset
@@ -13,7 +15,7 @@ import multiprocessing
 #           Initial variables
 ########################################
 
-dataset_path = "./dataset/ECG_200"
+dataset_path = "../../../../datasets/ECG 200 dataset/ecg200"
 users_files = os.listdir(dataset_path)
 users_files.remove("clinicalData-selected")
 
@@ -91,6 +93,7 @@ def processing_ecg_files(users_ecg_files_chunk):
             pool.starmap(user_ekm_dataset, [(user, shared_counter, lock, len(users_ecg_files_chunk)) for user in users_ecg_files_chunk])
 
 for users_ecg_files_chunk in users_ecg_files_chunks:
+    print(users_ecg_files_chunk)
     processing_ecg_files(users_ecg_files_chunk)
     break
 

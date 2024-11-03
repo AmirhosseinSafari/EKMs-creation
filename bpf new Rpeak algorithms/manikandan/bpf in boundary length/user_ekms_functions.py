@@ -106,15 +106,16 @@ def save_ecm(dataset_name, path, key, i):
 
 def big_EKM_view_test(norm_ecm, test_path, user_id, ekms_counter):
     # Creating dir if doesn't exist
-    saving_path = f"{test_path}/{user_id}/{ekms_counter}"
-    if not os.path.isdir(saving_path):
-      os.makedirs(saving_path)
+    base_user_saving_path = f"{test_path}/{user_id}"
+    if not os.path.isdir(base_user_saving_path):
+      os.makedirs(base_user_saving_path)
 
     # Create a large figure for the heatmap
     plt.figure(figsize=(16, 12))
     # Plot heatmap with desired parameters
     sns.heatmap(norm_ecm, xticklabels=False, yticklabels=False, cbar=False)
     # Save the heatmap image to the specified path with high resolution
+    saving_path = f"{base_user_saving_path}/{ekms_counter}"
     plt.savefig(saving_path, dpi=300, bbox_inches='tight', pad_inches=0)
     # Close the plot to free memory
     plt.close()
