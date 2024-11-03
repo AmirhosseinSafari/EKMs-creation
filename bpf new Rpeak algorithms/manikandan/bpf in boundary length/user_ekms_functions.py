@@ -104,6 +104,10 @@ def save_ecm(dataset_name, path, key, i):
     plt.savefig(f"{path}/{bpf}bpf-ekm-{dataset_name}-{key}-{str(i)}",bbox_inches='tight', pad_inches=0)
 
 def big_EKM_view_test(norm_ecm, test_path):
+    # Creating dir if doesn't exist
+    if not os.path.isdir(test_path):
+      os.mkdir(test_path)
+
     # Create a large figure for the heatmap
     plt.figure(figsize=(16, 12))
     # Plot heatmap with desired parameters
