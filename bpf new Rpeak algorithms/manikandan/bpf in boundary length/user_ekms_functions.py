@@ -43,6 +43,9 @@ Rpeak_method = "manikandan2012"
 #               Functions
 ########################################
 
+###################
+#    Preprocess
+###################
 # Normalizing method
 def normalize(signal):
     a, b = -1, 1
@@ -73,6 +76,10 @@ def process_ecg(unfiltered_ecg, fs):
    rpeaks = info["ECG_R_Peaks"]
 
    return rpeaks, ecg_cleaned
+
+###################
+# Storing into files
+###################
 
 def write_dict_to_file(my_dict, file_path):
     """
@@ -128,6 +135,10 @@ def save_rpeaks_failure_bpf_recording_signal_length(rpeaks, boundaris, dataset_n
     }
     saving_path = f"{path}/{bpf}bpf-rpeaks-recording-signal-length-failure-{dataset_name}-{key}-{str(i)}"
     write_dict_to_file(r_peak_dict, saving_path)
+
+###################
+#  EKM creation
+###################
 
 def electrocardiomatrix_bpf_in_recording_signal_length(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate):
     '''
@@ -226,6 +237,10 @@ def little_ekm_dataset(lead_data,
     ekms_counter += 1
     init_window += (sampling_rate * window_size)
 
+###################
+# Directory managment
+###################
+
 def user_EKMs_dir_creator(user_id):
   # Removing previous EKM dir and creating new one
   try:
@@ -300,6 +315,10 @@ def user_r_peaks_of_failure_EKMs_dir_creator(user_id):
     os.makedirs(f"./{base_rpeaks_failure_path}_{user_id}/z_lead")
   except OSError as e:
     print(f"Error: {e}")
+
+###################
+#  Main process
+###################
 
 def user_ekm_dataset(ecg_file, shared_counter_, lock, total_elements):
     # print(f"\n{ecg_file}")
