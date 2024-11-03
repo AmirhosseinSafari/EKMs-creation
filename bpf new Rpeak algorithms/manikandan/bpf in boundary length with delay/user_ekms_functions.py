@@ -21,13 +21,14 @@ import neurokit2 as nk
 #           Initial variables
 ########################################
 
-dataset_path = "./dataset/ECG_200"
-dataset_name = "bpf_recording_signal_length_with_delay_ekm_dataset"
+dataset_path = "../../../../datasets/ECG 200 dataset/ecg200"
+dataset_name = "bpf_recording_signal_length_ekm_dataset"
 base_ekms_path = f'EKM_dataset'
 base_rpeaks_path = f'Rpeaks_dataset'
 base_all_rpeaks_path = f'All_Rpeaks_dataset'
 base_rpeaks_failure_path = f'Rpeaks_failure_dataset'
 base_distance = f'R_R_distance_dataset'
+test_big_EKM_view_path = "./big_EKMs_view_test"
 
 lead_names_dict = {
     1: "x_lead",
@@ -43,6 +44,9 @@ Rpeak_method = "manikandan2012"
 #               Functions
 ########################################
 
+###################
+#    Preprocess
+###################
 # Normalizing method
 def normalize(signal):
     a, b = -1, 1
@@ -68,11 +72,16 @@ def peak_distance(r_peaks):
     return np.mean(dist)
 
 def process_ecg(unfiltered_ecg, fs):
-   ecg_cleaned = nk.ecg_clean(unfiltered_ecg, sampling_rate=fs)
-   signals, info = nk.ecg_peaks(ecg_cleaned, sampling_rate=fs, method=Rpeak_method)
+   # ECG Filtering (Bandpass between 5 and 15 Hz)
+   filtered_signal = bsnb.detect._ecg_band_pass_filter(unfiltered_ecg, fs)
+   signals, info = nk.ecg_peaks(filtered_signal, sampling_rate=fs, method=Rpeak_method)
    rpeaks = info["ECG_R_Peaks"]
 
-   return rpeaks, ecg_cleaned
+   return rpeaks, filtered_signal
+
+###################
+# Storing into files
+###################
 
 def write_dict_to_file(my_dict, file_path):
     """
@@ -94,6 +103,22 @@ def write_dict_to_file(my_dict, file_path):
 def save_ecm(dataset_name, path, key, i):
     # Saving EKMs in format of {path}/_NumberOfbpfsInAEKM_bpf-ekm-{key=user id}-{i=serial Number}
     plt.savefig(f"{path}/{bpf}bpf-ekm-{dataset_name}-{key}-{str(i)}",bbox_inches='tight', pad_inches=0)
+
+def big_EKM_view_test(norm_ecm, test_path, user_id, ekms_counter):
+    # Creating dir if doesn't exist
+    base_user_saving_path = f"{test_path}/{user_id}"
+    if not os.path.isdir(base_user_saving_path):
+      os.makedirs(base_user_saving_path)
+
+    # Create a large figure for the heatmap
+    plt.figure(figsize=(16, 12))
+    # Plot heatmap with desired parameters
+    sns.heatmap(norm_ecm, xticklabels=False, yticklabels=False, cbar=False)
+    # Save the heatmap image to the specified path with high resolution
+    saving_path = f"{base_user_saving_path}/{ekms_counter}"
+    plt.savefig(saving_path, dpi=300, bbox_inches='tight', pad_inches=0)
+    # Close the plot to free memory
+    plt.close()
 
 def save_distance_bpf(key, distance, dataset_name, r_r_distance_path):
     distance_info = {
@@ -128,6 +153,10 @@ def save_rpeaks_failure_bpf_recording_signal_length(rpeaks, boundaris, dataset_n
     }
     saving_path = f"{path}/{bpf}bpf-rpeaks-recording-signal-length-failure-{dataset_name}-{key}-{str(i)}"
     write_dict_to_file(r_peak_dict, saving_path)
+
+###################
+#  EKM creation
+###################
 
 def electrocardiomatrix_bpf_in_recording_signal_length_with_delay(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate):
     '''
@@ -210,7 +239,7 @@ def little_ekm_dataset(lead_data,
   # print("  .Getting EKMs")
   while(ekms_counter<total_ecms):
     if (init_window >= len(norm_ecg) or  init_window + (sampling_rate * window_size) >= len(norm_ecg)): break
-    # electrocardiomatrix_bpf_in_recording_signal_length(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate) 
+    # electrocardiomatrix_bpf_in_recording_signal_length_with_delay(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate) 
     ecm, rpeaks, boundaris = electrocardiomatrix_bpf_in_recording_signal_length_with_delay(distance, peaks, norm_ecg, ekms_counter, sampling_rate)
     if ecm is None: break
     if isinstance(ecm, str):
@@ -219,6 +248,8 @@ def little_ekm_dataset(lead_data,
             continue
     distance = int(distance)
     norm_ecm = normalize(ecm)
+
+    #big_EKM_view_test(norm_ecm, test_big_EKM_view_path, key, ekms_counter)
 
     fig = plt.figure(num=1, clear=True, figsize=(fig_width_px / 80, fig_height_px / 80))
     ax = fig.add_subplot()
@@ -232,6 +263,10 @@ def little_ekm_dataset(lead_data,
 
     ekms_counter += 1
     init_window += (sampling_rate * window_size)
+
+###################
+# Directory managment
+###################
 
 def user_EKMs_dir_creator(user_id):
   # Removing previous EKM dir and creating new one
@@ -308,8 +343,12 @@ def user_r_peaks_of_failure_EKMs_dir_creator(user_id):
   except OSError as e:
     print(f"Error: {e}")
 
+###################
+#  Main process
+###################
+
 def user_ekm_dataset(ecg_file, shared_counter_, lock, total_elements):
-    # print(f"\n{ecg_file}")
+    print(f"\n{ecg_file}")
 
     ecg_file_path = dataset_path + "/" + ecg_file
     user_leads_all_data = Holter(ecg_file_path)
