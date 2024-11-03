@@ -27,6 +27,9 @@ lead_names_dict = {
     3: "z_lead"
 }
 
+if not os.path.isdir('./Users EKM zip'):
+  os.mkdir("./Users EKM zip")
+
 ########################################
 #       Reading files and playground!
 ########################################
