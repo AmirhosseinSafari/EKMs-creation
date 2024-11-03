@@ -207,10 +207,10 @@ def little_ekm_dataset(lead_data,
                        all_rpeaks_path,
                        rpeaks_failure_path,
                        bpf):
-  print("  .Preprocessing the signal")
+  # print("  .Preprocessing the signal")
   peaks, filtered_ecg = process_ecg(lead_data , sampling_rate)
 
-  print("  .Getting detrend_signal, norm_ecg, distance")
+  # print("  .Getting detrend_signal, norm_ecg, distance")
   detrend_signal = detrend(filtered_ecg)
   norm_ecg = normalize(detrend_signal)
   distance = peak_distance(peaks)
@@ -229,7 +229,7 @@ def little_ekm_dataset(lead_data,
 
   window_size = recording_signal_length # seconds
 
-  print("  .Getting EKMs")
+  # print("  .Getting EKMs")
   while(ekms_counter<total_ecms):
     if (init_window >= len(norm_ecg) or  init_window + (sampling_rate * window_size) >= len(norm_ecg)): break
     # electrocardiomatrix_bpf_in_recording_signal_length(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate) 
@@ -242,7 +242,7 @@ def little_ekm_dataset(lead_data,
     distance = int(distance)
     norm_ecm = normalize(ecm)
 
-    big_EKM_view_test(norm_ecm, test_big_EKM_view_path, key, ekms_counter)
+    #big_EKM_view_test(norm_ecm, test_big_EKM_view_path, key, ekms_counter)
 
     fig = plt.figure(num=1, clear=True, figsize=(fig_width_px / 80, fig_height_px / 80))
     ax = fig.add_subplot()

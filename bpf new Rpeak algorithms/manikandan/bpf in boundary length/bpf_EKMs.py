@@ -67,8 +67,8 @@ for usr in list_of_ekm_extracted_users:
 ########################################
 
 # Specify the number of processes in the pool
-# num_processes = multiprocessing.cpu_count()
-num_processes = 1
+num_processes = multiprocessing.cpu_count()
+# num_processes = 1
 
 # Creating slices of users' ecg file for multiprocessing
 slices_size = num_processes
@@ -93,7 +93,7 @@ def processing_ecg_files(users_ecg_files_chunk):
             pool.starmap(user_ekm_dataset, [(user, shared_counter, lock, len(users_ecg_files_chunk)) for user in users_ecg_files_chunk])
 
 for users_ecg_files_chunk in users_ecg_files_chunks:
-    print(users_ecg_files_chunk)
+    # print(users_ecg_files_chunk)
     processing_ecg_files(users_ecg_files_chunk)
     break
 
