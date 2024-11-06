@@ -16,12 +16,13 @@ import seaborn as sns
 import json
 import biosppy
 import neurokit2 as nk
+import logging
 
 ########################################
 #           Initial variables
 ########################################
 
-dataset_path = "../../../../datasets/ECG 200 dataset/ecg200"
+dataset_path = "../../../../../datasets/ECG 200 dataset/ecg200/"
 dataset_name = "bpf_recording_signal_length_ekm_dataset"
 base_ekms_path = f'EKM_dataset'
 base_rpeaks_path = f'Rpeaks_dataset'
@@ -38,7 +39,7 @@ lead_names_dict = {
 
 bpf = 5
 recording_signal_length = 6
-Rpeak_method = "manikandan2012"
+Rpeak_method = "panTomkins1945"
 
 ########################################
 #               Functions
@@ -207,6 +208,8 @@ def little_ekm_dataset(lead_data,
                        all_rpeaks_path,
                        rpeaks_failure_path,
                        bpf):
+  logging.info(f"Processing user {key}. Lead: {ekms_path.split('/')[1]}. ECG Preprocessing.")
+  
   # print("  .Preprocessing the signal")
   peaks, filtered_ecg = process_ecg(lead_data , sampling_rate)
 
@@ -228,6 +231,8 @@ def little_ekm_dataset(lead_data,
   fig_height_px = 21
 
   window_size = recording_signal_length # seconds
+
+  logging.info(f"Processing user {key}. Lead: {ekms_path.split('/')[1]}. EKMs extracting.")
 
   # print("  .Getting EKMs")
   while(ekms_counter<total_ecms):
@@ -256,6 +261,10 @@ def little_ekm_dataset(lead_data,
 
     ekms_counter += 1
     init_window += (sampling_rate * window_size)
+
+    if ekms_counter % 100 == 0:
+      logging.info(f"Processing user {key}. Lead: {ekms_path.split('/')[1]}. {ekms_counter} EKMs Extracted.")
+
 
 ###################
 # Directory managment
@@ -341,7 +350,7 @@ def user_r_peaks_of_failure_EKMs_dir_creator(user_id):
 ###################
 
 def user_ekm_dataset(ecg_file, shared_counter_, lock, total_elements):
-    print(f"\n{ecg_file}")
+    # print(f"\n{ecg_file}")
 
     ecg_file_path = dataset_path + "/" + ecg_file
     user_leads_all_data = Holter(ecg_file_path)
@@ -361,9 +370,14 @@ def user_ekm_dataset(ecg_file, shared_counter_, lock, total_elements):
     user_all_r_peaks_dir_creator(user_id)
     user_r_peaks_of_failure_EKMs_dir_creator(user_id)
 
+    # Log the current progress
+    logging.info(f"Processing user {user_id}. Progress: {shared_counter_.value}/{total_elements}")
+
     for _, lead_data in enumerate(user_leads_signals):
         # name_of_file = ecg_file + ": " + lead_names_dict[_ + 1]
         # pretier_print("begin", int(user_id), name_of_file)
+
+        logging.info(f"Processing user {user_id}. Lead: {lead_names_dict[_ + 1]}")
 
         lead_path = f"{base_ekms_path}_{user_id}/{lead_names_dict[_ + 1]}"
         rpeaks_path = f"{base_rpeaks_path}_{user_id}/{lead_names_dict[_ + 1]}"
