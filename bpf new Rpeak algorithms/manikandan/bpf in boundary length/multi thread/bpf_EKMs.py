@@ -18,7 +18,7 @@ import logging
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(processName)s - %(message)s')
 
-dataset_path = "../../../../../datasets/ECG 200 dataset/ecg200/"
+dataset_path = "../../../../../datasets/ECG 200 dataset/ecg200"
 users_files = os.listdir(dataset_path)
 users_files.remove("clinicalData-selected")
 
@@ -81,6 +81,9 @@ users_ecg_files_chunks = [users_ecg_files[_ * slices_size: (_+1) * slices_size] 
 if number_of_complete_slices * slices_size != len(users_ecg_files):
     users_ecg_files_chunks.append(users_ecg_files[number_of_complete_slices * slices_size:])
 
+# # temp
+# users_ecg_files_chunks = ["9005.ecg", "2007.ecg", "6030.ecg", "9062.ecg"]
+# # temp
 
 def processing_ecg_files(users_ecg_files_chunk):
     with multiprocessing.Manager() as manager:
@@ -99,6 +102,10 @@ for users_ecg_files_chunk in users_ecg_files_chunks:
     # print(users_ecg_files_chunk)
     processing_ecg_files(users_ecg_files_chunk)
     break
+
+# # temp
+# processing_ecg_files(users_ecg_files_chunks)
+# # temp
 
 # Print final progress
 print("Processing complete.")
