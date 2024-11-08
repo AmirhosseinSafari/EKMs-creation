@@ -14,7 +14,7 @@ import biosignalsnotebooks as bsnb
 from scipy.signal import detrend
 import seaborn as sns
 import json
-import biosppy
+# import biosppy
 import neurokit2 as nk
 import logging
 

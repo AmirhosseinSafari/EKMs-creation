@@ -10,10 +10,13 @@ import os
 # from user_ekm_functions import user_ekm_dataset
 from user_ekms_functions import user_ekm_dataset
 import multiprocessing
+import logging
 
 ########################################
 #           Initial variables
 ########################################
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(processName)s - %(message)s')
 
 dataset_path = "../../../../datasets/ECG 200 dataset/ecg200"
 users_files = os.listdir(dataset_path)
