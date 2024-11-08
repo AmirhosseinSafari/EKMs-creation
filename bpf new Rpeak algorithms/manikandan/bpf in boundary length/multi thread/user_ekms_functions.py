@@ -39,7 +39,7 @@ lead_names_dict = {
 
 bpf = 5
 recording_signal_length = 6
-Rpeak_method = "pantompkins1985"
+Rpeak_method = "manikandan2012"
 
 ########################################
 #               Functions
@@ -224,7 +224,7 @@ def little_ekm_dataset(lead_data,
   # Saving the R-R distance of each lead of the user
   save_all_r_peaks_bpf(key, peaks, dataset_name, all_rpeaks_path)
 
-  ekms_counter, init_window = 2800, 0
+  ekms_counter, init_window = 0, 0
   total_ecms = 3000
 
   fig_width_px = 33
