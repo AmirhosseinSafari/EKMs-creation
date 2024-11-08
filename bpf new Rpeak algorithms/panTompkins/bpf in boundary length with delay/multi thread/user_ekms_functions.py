@@ -250,6 +250,8 @@ def little_ekm_dataset(lead_data,
     if isinstance(ecm, str):
         if ecm == "Not enough peaks": 
             save_rpeaks_failure_bpf_recording_signal_length(rpeaks, boundaris, dataset_name, rpeaks_failure_path, key, ekms_counter)
+            ekms_counter += 1
+            init_window += (sampling_rate * window_size)
             continue
     distance = int(distance)
     norm_ecm = normalize(ecm)

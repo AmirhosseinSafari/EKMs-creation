@@ -93,9 +93,9 @@ def processing_ecg_files(users_ecg_files_chunk):
             pool.starmap(user_ekm_dataset, [(user, shared_counter, lock, len(users_ecg_files_chunk)) for user in users_ecg_files_chunk])
 
 for users_ecg_files_chunk in users_ecg_files_chunks:
-    # print(users_ecg_files_chunk)
+    print(users_ecg_files_chunk)
     processing_ecg_files(users_ecg_files_chunk)
-    break
+    # break
 
 # Print final progress
 print("Processing complete.")
