@@ -225,6 +225,7 @@ def little_ekm_dataset(lead_data,
   save_all_r_peaks_bpf(key, peaks, dataset_name, all_rpeaks_path)
 
   ekms_counter, init_window = 0, 0
+  boundary_counter = 0
   total_ecms = 3000
 
   fig_width_px = 33
@@ -238,12 +239,12 @@ def little_ekm_dataset(lead_data,
   while(ekms_counter<total_ecms):
     if (init_window >= len(norm_ecg) or  init_window + (sampling_rate * window_size) >= len(norm_ecg)): break
     # electrocardiomatrix_bpf_in_recording_signal_length(distance, r_peaks, filtered_ecg, EKM_counter, sampling_rate) 
-    ecm, rpeaks, boundaris = electrocardiomatrix_bpf_in_recording_signal_length(distance, peaks, norm_ecg, ekms_counter, sampling_rate)
+    ecm, rpeaks, boundaris = electrocardiomatrix_bpf_in_recording_signal_length(distance, peaks, norm_ecg, boundary_counter, sampling_rate)
     if ecm is None: break
     if isinstance(ecm, str):
         if ecm == "Not enough peaks": 
-            save_rpeaks_failure_bpf_recording_signal_length(rpeaks, boundaris, dataset_name, rpeaks_failure_path, key, ekms_counter)
-            ekms_counter += 1
+            save_rpeaks_failure_bpf_recording_signal_length(rpeaks, boundaris, dataset_name, rpeaks_failure_path, key, boundary_counter)
+            boundary_counter += 1
             init_window += (sampling_rate * window_size)
             continue
     distance = int(distance)
@@ -262,6 +263,7 @@ def little_ekm_dataset(lead_data,
     save_rpeaks_bpf(rpeaks, ekms_counter, dataset_name, rpeaks_path, key)
 
     ekms_counter += 1
+    boundary_counter += 1
     init_window += (sampling_rate * window_size)
 
     if ekms_counter % 100 == 0:
